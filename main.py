@@ -19,35 +19,36 @@ def candidate_splits(x):
     splitpoints = (sort[0:len(sort)-1] + sort[1:len(sort)])/2
     return splitpoints
 
-def impurity_reduction(s,x,y):
+def impurity_reduction(s,f,x,y):
     i_y = impurity(y)
-    l = y[x < s]
-    r = y[x > s]
+    l = y[x[:,f] < s]
+    r = y[x[:,f] > s]
     pi_l = len(l)/len(y)
     pi_r = len(r)/len(y)
     i_l = impurity(l)
     i_r = impurity(r)
     return i_y - pi_l*i_l - pi_r*i_r
 
-def bestsplit(x,y):
+def bestsplit(x,y,nfeat):
     # Moet uitgebreid worden naar meerdere features
-    x,y = zip(*sorted(zip(x, y)))
-    x = np.array(x)
-    y = np.array(y)
-    S = candidate_splits(x)
+    features = np.random.choice(len(x[0]),nfeat)
     highest_redux = 0
-    for s in S:
-        d_i = impurity_reduction(s,x,y)
-        if d_i > highest_redux:
-            highest_redux = d_i
-            best_split = s
-    return best_split
+    for f in features:
+        #x,y = zip(*sorted(zip(x, y)))
+        S = candidate_splits(x[:,f])
+        for s in S:
+            d_i = impurity_reduction(s,f,x,y)
+            if d_i > highest_redux:
+                highest_redux = d_i
+                best_split = s
+                best_feature = f
+    return best_split, best_feature
 
-def generate_children(s,x,y):
-    lx = x[x < s]
-    ly = y[x < s]
-    rx = x[x > s]
-    ry = y[x > s]
+def generate_children(s,f,x,y):
+    lx = x[x[:,f] < s]
+    ly = y[x[:,f] < s]
+    rx = x[x[:,f] > s]
+    ry = y[x[:,f] > s]
 
     return Node(lx,ly),Node(rx,ry)
 
@@ -68,14 +69,13 @@ def tree_grow(x: np.ndarray, y: np.ndarray, nmin: int, minleaf: int, nfeat: int)
         current_node = nodelist.pop(0)
         x,y = (current_node.x, current_node.y)
         if impurity(y) > 0:
-            s = bestsplit(x,y)
+            s,f = bestsplit(x,y,nfeat)
             current_node.s = s
-            l,r = generate_children(s,x,y)
+            current_node.f = f
+            l,r = generate_children(s,f,x,y)
             current_node.l = l
             current_node.r = r
             nodelist.append(l)
-            print("l.x:", l.x)
-            print("r.x:", r.x)
             nodelist.append(r)
             tree[1].append(l)
             tree[1].append(r)
