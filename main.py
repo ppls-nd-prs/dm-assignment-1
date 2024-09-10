@@ -6,6 +6,8 @@ class Node:
         self.y = y
         self.s = None
         self.parent = None
+        self.l = None
+        self.r = None
         
 def impurity(arr):
     sum = np.sum(arr)
