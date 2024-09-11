@@ -22,6 +22,8 @@ class Node:
 def impurity(arr : np.ndarray):
     '''
     Calculates a vector's binary impurity with the gini-index
+    Params:
+        - arr : 1d numpy.ndarray : an array consisting of 0's and 1's
     '''
     sum = np.sum(arr)
     p_1 = sum/arr.size
