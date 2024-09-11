@@ -38,8 +38,9 @@ def candidate_splits(x : np.ndarray, minleaf : int):
         minleaf : int : the minimal splitsize
     '''
     sort = np.sort(np.unique(x))
-    splitpoints = (sort[0+minleaf:len(sort)-(1+minleaf)] + sort[1+minleaf:len(sort)-minleaf])/2
-    return splitpoints
+    naive_splitpoints = (sort[0:len(sort)-1] + sort[1:len(sort)])/2
+    splitpoints = np.array([s for s in naive_splitpoints if len(x[x < s]) >= minleaf and len(x[x > s]) >= minleaf])
+    return np.array(splitpoints)
 
 def impurity_reduction(s : int, f : int, x : np.ndarray, y : np.ndarray):
     '''
@@ -69,7 +70,6 @@ def bestsplit(x : np.ndarray, y : np.ndarray, nfeat : int, minleaf : int):
         - minleaf : int : the minimum number of observation allowed in a split
     '''
     features = np.random.choice(len(x[0]),nfeat)
-    print("features selected:", features)
     highest_redux = 0
     best_split = None
     for f in features:
