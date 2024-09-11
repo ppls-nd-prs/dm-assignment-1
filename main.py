@@ -106,11 +106,11 @@ def tree_grow(x: np.ndarray, y: np.ndarray, nmin: int, minleaf: int, nfeat: int)
     '''
     Grows a classification tree.
     Params:
-        x: numpy.ndarray: 2d matrix of data points
-        y: numpy.ndarray: 1d vector of class labels
-        nmin: int: minimal number of observations a node must contain
-        minleaf: int: minimum number of observations required for a leaf node
-        nfeat: int: number of features that must considered for each split
+        - x: numpy.ndarray: 2d matrix of data points
+        - y: numpy.ndarray: 1d vector of class labels
+        - nmin: int: minimal number of observations a node must contain
+        - minleaf: int: minimum number of observations required for a leaf node
+        - nfeat: int: number of features that must considered for each split
     '''
     start_node = Node(x,y)
     tree = (start_node,[])
