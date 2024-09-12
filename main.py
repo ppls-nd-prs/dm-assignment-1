@@ -76,7 +76,7 @@ def bestsplit(x : np.ndarray, y : np.ndarray, nfeat : int, minleaf : int):
         #x,y = zip(*sorted(zip(x, y)))
         S = candidate_splits(x[:,f],minleaf)
         for s in S:
-            d_i = impurity_reduction(s,f,x,y)
+            d_i = impurity_reduction(s,f,x,y) # TODO: discuss whether we want to simplify this to minimizing summed child impurity
             if d_i > highest_redux:
                 highest_redux = d_i
                 best_split = s
@@ -102,6 +102,22 @@ def generate_children(s : int, f : int, x : np.ndarray, y : np.ndarray):
 
     return Node(lx,ly),Node(rx,ry)
 
+def sample(x : np.ndarray, y : np.ndarray, size : int):
+    '''
+    Produces a uniform random sample from data.
+    Params:
+        - x : 2d numpy.ndarray : the (multi-featured) data points
+        - y : 1d numpy.ndarray : the class labels
+        - size : int : the size the sample should take
+    '''
+    sample_x = []
+    sample_y = []
+    for _ in range(size):
+        i = np.random.choice(range(len(x)))
+        sample_x.append(x[i])
+        sample_y.append(y[i])
+    return (np.array(sample_x),np.array(sample_y))
+           
 def tree_grow(x: np.ndarray, y: np.ndarray, nmin: int, minleaf: int, nfeat: int):
     '''
     Grows a classification tree.
@@ -134,6 +150,24 @@ def tree_grow(x: np.ndarray, y: np.ndarray, nmin: int, minleaf: int, nfeat: int)
                     tree[1].append(r)
     return tree
 
+def tree_grow_b(x: np.ndarray, y: np.ndarray, nmin: int, minleaf: int, nfeat: int, m : int):
+    '''
+    Build multiple trees for different bootstrap sample from the original dataset.
+    Params:
+        - x: numpy.ndarray: 2d matrix of data points
+        - y: numpy.ndarray: 1d vector of class labels
+        - nmin: int: minimal number of observations a node must contain
+        - minleaf: int: minimum number of observations required for a leaf node
+        - nfeat: int: number of features that must considered for each split
+        - m: int: the amount of trees to be trained on bootstrap samples.
+    '''
+    trees = []
+    for i in range(m):
+        sample_x,sample_y = sample(x,y,len(x))
+        tree = tree_grow(sample_x,sample_y,nmin,minleaf,nfeat)
+        trees.append(tree)
+    return trees
+
 def traverse_tree(e : np.ndarray, node : Node):
     '''
     Traverses the tree based on a data point's feature and nodes'
@@ -144,11 +178,12 @@ def traverse_tree(e : np.ndarray, node : Node):
     '''
     if not(node.s):
         return node
-    elif e[node.f] < node.s:
+    elif e[node.f] <= node.s: # is it true that only here this is a problem?
         return traverse_tree(e, node.l)
     elif e[node.f] > node.s:
         return traverse_tree(e, node.r)
     else:
+        print("node.x")
         raise Exception("Data point feature value is equal to node split value. This could be caused by a bug in candidate_splits.")
 
 def tree_pred(x : np.ndarray, tr : tuple):
@@ -165,3 +200,23 @@ def tree_pred(x : np.ndarray, tr : tuple):
         leaf = traverse_tree(e, tr[0])
         y_hat.append(round(sum(leaf.y)/len(leaf.y)))
     return np.array(y_hat)
+
+def tree_pred_b(tree_list : list, x : np.ndarray):
+    '''
+    Gives majority vote label predictions for data points based
+    on a list of classification trees.
+    Params:
+        - tree_list : list : a list of classification trees
+        - x : np.ndarray : the (multi-featured) data points
+    '''
+    pred_list = []
+    for tree in tree_list:
+        tree_hat_y = tree_pred(x,tree)
+        pred_list.append(tree_hat_y)
+    y_hat = np.round(np.sum(pred_list,axis=0)/len(pred_list))
+    return np.array(y_hat)
+
+        
+    
+
+
