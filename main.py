@@ -134,6 +134,34 @@ def tree_grow(x: np.ndarray, y: np.ndarray, nmin: int, minleaf: int, nfeat: int)
                     tree[1].append(r)
     return tree
 
-def tree_pred(x: np.ndarray,tr: tuple):
-    pass
+def traverse_tree(e : np.ndarray, node : Node):
+    '''
+    Traverses the tree based on a data point's feature and nodes'
+    split values.
+    Params:
+        - e : 1d numpy.ndarray : the data point to traverse the tree
+        - node : Node : the node to start the traversing in 
+    '''
+    if not(node.s):
+        return node
+    elif e[node.f] < node.s:
+        return traverse_tree(e, node.l)
+    elif e[node.f] > node.s:
+        return traverse_tree(e, node.r)
+    else:
+        raise Exception("Data point feature value is equal to node split value. This could be caused by a bug in candidate_splits.")
 
+def tree_pred(x : np.ndarray, tr : tuple):
+    '''
+    Return a numpy.ndarray containing prediction labels for datapoints
+    based on the majority label of the leaf node the data points get
+    classified into.
+    Params:
+        - x : 2d numpy.ndarray : the (multi-featured) data points
+        - tr : tuple (Node,[Node]) : the classification tree
+    '''
+    y_hat = []
+    for e in x:
+        leaf = traverse_tree(e, tr[0])
+        y_hat.append(round(sum(leaf.y)/len(leaf.y)))
+    return np.array(y_hat)
