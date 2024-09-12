@@ -69,14 +69,13 @@ def bestsplit(x : np.ndarray, y : np.ndarray, nfeat : int, minleaf : int):
         - nfeat : int : the amount of feature to randomly select a split candidates
         - minleaf : int : the minimum number of observation allowed in a split
     '''
-    features = np.random.choice(len(x[0]),nfeat)
+    features = np.random.choice(len(x[0]),nfeat,replace=False)
     highest_redux = 0
     best_split = None
     for f in features:
-        #x,y = zip(*sorted(zip(x, y)))
         S = candidate_splits(x[:,f],minleaf)
         for s in S:
-            d_i = impurity_reduction(s,f,x,y) # TODO: discuss whether we want to simplify this to minimizing summed child impurity
+            d_i = impurity_reduction(s,f,x,y)
             if d_i > highest_redux:
                 highest_redux = d_i
                 best_split = s
@@ -129,7 +128,7 @@ def tree_grow(x: np.ndarray, y: np.ndarray, nmin: int, minleaf: int, nfeat: int)
         - nfeat: int: number of features that must considered for each split
     '''
     start_node = Node(x,y)
-    tree = (start_node,[])
+    tree = start_node
     nodelist = [start_node]
     while len(nodelist) > 0:
         current_node = nodelist.pop(0)
@@ -146,8 +145,6 @@ def tree_grow(x: np.ndarray, y: np.ndarray, nmin: int, minleaf: int, nfeat: int)
                     current_node.r = r
                     nodelist.append(l)
                     nodelist.append(r)
-                    tree[1].append(l)
-                    tree[1].append(r)
     return tree
 
 def tree_grow_b(x: np.ndarray, y: np.ndarray, nmin: int, minleaf: int, nfeat: int, m : int):
@@ -197,7 +194,7 @@ def tree_pred(x : np.ndarray, tr : tuple):
     '''
     y_hat = []
     for e in x:
-        leaf = traverse_tree(e, tr[0])
+        leaf = traverse_tree(e, tr)
         y_hat.append(round(sum(leaf.y)/len(leaf.y)))
     return np.array(y_hat)
 
