@@ -198,7 +198,7 @@ def tree_pred(x : np.ndarray, tr : tuple):
         y_hat.append(round(sum(leaf.y)/len(leaf.y)))
     return np.array(y_hat)
 
-def tree_pred_b(tree_list : list, x : np.ndarray):
+def tree_pred_b(x : np.ndarray, tree_list : list):
     '''
     Gives majority vote label predictions for data points based
     on a list of classification trees.
