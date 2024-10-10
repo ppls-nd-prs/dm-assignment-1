@@ -24,6 +24,8 @@ def impurity(arr : np.ndarray):
     Calculates a vector's binary impurity with the gini-index
     Params:
         - arr : 1d numpy.ndarray : an array consisting of 0's and 1's
+    Returns:
+        - float : the gini-index of the input array
     '''
     sum = np.sum(arr)
     p_1 = sum/arr.size
@@ -34,8 +36,10 @@ def candidate_splits(x : np.ndarray, minleaf : int):
     Calculates candidate split values for a real-valued array, taking
     a minimal split-size into account.
     Params:
-        x : 1d numpy.ndarray : real-valued array to be split
-        minleaf : int : the minimal splitsize
+        - x : 1d numpy.ndarray : real-valued array to be split
+        - minleaf : int : the minimal splitsize
+    Returns:
+        - 1d np.array : an array of splitpoints
     '''
     sort = np.sort(np.unique(x))
     naive_splitpoints = (sort[0:len(sort)-1] + sort[1:len(sort)])/2
@@ -50,6 +54,8 @@ def impurity_reduction(s : int, f : int, x : np.ndarray, y : np.ndarray):
         - f : int : the feature to be split on
         - x : 2d numpy.ndarray : the (multi-featured) data points
         - y : 1d numpy.ndarray : the class labels
+    Returns:
+        - float : the impurity reduction obtained by splitting the data
     '''
     i_y = impurity(y)
     l = y[x[:,f] < s]
@@ -68,6 +74,8 @@ def bestsplit(x : np.ndarray, y : np.ndarray, nfeat : int, minleaf : int):
         - y : 1d numpy.ndarray : the class labels
         - nfeat : int : the amount of feature to randomly select a split candidates
         - minleaf : int : the minimum number of observation allowed in a split
+    Returns:
+        - (int,int) : the best split on the best feature to split on
     '''
     features = np.random.choice(len(x[0]),nfeat,replace=False)
     highest_redux = 0
@@ -93,6 +101,8 @@ def generate_children(s : int, f : int, x : np.ndarray, y : np.ndarray):
         - f : int : the feature to split on
         - x : 2d numpy.ndarray : the (multifeatured) datapoints
         - y : 1d numpy.ndarray : the class labels
+    Returns:
+        - (Node, Node) : the left and right child resulting from a split
     '''
     lx = x[x[:,f] < s]
     ly = y[x[:,f] < s]
@@ -108,6 +118,8 @@ def sample(x : np.ndarray, y : np.ndarray, size : int):
         - x : 2d numpy.ndarray : the (multi-featured) data points
         - y : 1d numpy.ndarray : the class labels
         - size : int : the size the sample should take
+    Returns:
+        - (2d numpy.array, 1d numpy.array) : data point and corresponding class label sample
     '''
     sample_x = []
     sample_y = []
@@ -126,6 +138,8 @@ def tree_grow(x: np.ndarray, y: np.ndarray, nmin: int, minleaf: int, nfeat: int)
         - nmin: int: minimal number of observations a node must contain
         - minleaf: int: minimum number of observations required for a leaf node
         - nfeat: int: number of features that must considered for each split
+    Returns:
+        - Node : the start node of the constructed tree
     '''
     start_node = Node(x,y)
     tree = start_node
@@ -157,6 +171,8 @@ def tree_grow_b(x: np.ndarray, y: np.ndarray, nmin: int, minleaf: int, nfeat: in
         - minleaf: int: minimum number of observations required for a leaf node
         - nfeat: int: number of features that must considered for each split
         - m: int: the amount of trees to be trained on bootstrap samples.
+    Returns:
+        - list : a list of root Nodes
     '''
     trees = []
     for i in range(m):
@@ -172,6 +188,8 @@ def traverse_tree(e : np.ndarray, node : Node):
     Params:
         - e : 1d numpy.ndarray : the data point to traverse the tree
         - node : Node : the node to start the traversing in 
+    Returns:
+        - Node : the leaf node the traversal ended up in
     '''
     if not(node.s):
         return node
@@ -191,6 +209,8 @@ def tree_pred(x : np.ndarray, tr : tuple):
     Params:
         - x : 2d numpy.ndarray : the (multi-featured) data points
         - tr : tuple (Node,[Node]) : the classification tree
+    Returns:
+        - 1d numpy.array : the list of predictions made by the tree
     '''
     y_hat = []
     for e in x:
@@ -205,6 +225,8 @@ def tree_pred_b(x : np.ndarray, tree_list : list):
     Params:
         - tree_list : list : a list of classification trees
         - x : np.ndarray : the (multi-featured) data points
+    Returns:
+        - 1d numpy.array : a list of prediction made by the ensemble
     '''
     pred_list = []
     for tree in tree_list:
